@@ -4,3 +4,7 @@
 /packages
 riderModule.iml
 /_ReSharper.Caches
+/ConsoleTestApp/bin
+/ConsoleTestApp/obj
+/PayPalCheckout/bin
+/PayPalCheckout/obj
