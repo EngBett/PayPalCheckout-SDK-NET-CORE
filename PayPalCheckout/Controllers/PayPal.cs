@@ -14,7 +14,7 @@ namespace PayPalCheckout.Controllers
 {
     public class PayPal
     {
-        private readonly IHttpClientFactory _clientFactory;
+
         private readonly string _clientId;
         private readonly string _secret;
         private readonly string _mode;
@@ -26,9 +26,8 @@ namespace PayPalCheckout.Controllers
         /// <param name="clientId">PayPal Client Id</param>
         /// <param name="secret">PayPal Secret</param>
         /// <param name="mode">Environment type 'Sandbox' or 'Live' </param>
-        public PayPal(IHttpClientFactory clientFactory, string clientId, string secret, string mode)
+        public PayPal(string clientId, string secret, string mode)
         {
-            _clientFactory = clientFactory;
             _clientId = clientId;
             _secret = secret;
             _mode = mode;
@@ -57,13 +56,15 @@ namespace PayPalCheckout.Controllers
                 //pass in data specifying the encoding type and media type passed in
                 request.Content = new StringContent(JsonSerializer.Serialize(orderModel), Encoding.UTF8, "application/json");
 
-                var client = _clientFactory.CreateClient();
+                var client = new HttpClient();
                 var response = await client.SendAsync(request);
                 
                 if (response.IsSuccessStatusCode)
                 {
                     await using var responseStream = await response.Content.ReadAsStreamAsync();
                     var res = await JsonSerializer.DeserializeAsync<PayPalCreateOrderResponse>(responseStream);
+
+                    Console.WriteLine(JsonSerializer.Serialize(res));
 
                     return res;
                 }
@@ -100,7 +101,7 @@ namespace PayPalCheckout.Controllers
                 var formData = new KeyValuePair<string, string>("grant_type", "client_credentials");
                 request.Content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>> {formData});
 
-                var client = _clientFactory.CreateClient();
+                var client = new HttpClient();
                 var response = await client.SendAsync(request);
 
                 if (!response.IsSuccessStatusCode) return null;
@@ -108,6 +109,8 @@ namespace PayPalCheckout.Controllers
                 await using var responseStream = await response.Content.ReadAsStreamAsync();
 
                 var tokenData =await JsonSerializer.DeserializeAsync<AccessToken>(responseStream);
+
+                Console.WriteLine(JsonSerializer.Serialize(tokenData));
 
                 return tokenData;
 
